@@ -1,5 +1,6 @@
 flask
-openai
+flask-cors
 supabase
+openai
 numpy
 python-dotenv
