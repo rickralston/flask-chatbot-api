@@ -40,8 +40,8 @@ def fetch_relevant_context(question):
 
 def get_embedding(text):
     """Generates an embedding for the given text."""
-    response = openai.Embedding.create(input=[text], model="text-embedding-ada-002")
-    return np.array(response["data"][0]["embedding"], dtype=np.float32)
+    response = openai.embeddings.create(input=[text], model="text-embedding-ada-002")
+    return np.array(response.data[0].embedding, dtype=np.float32)
 
 @app.route("/ask", methods=["POST"])
 def ask_question():
