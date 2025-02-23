@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+import json
 import openai
 from supabase import create_client
 import os
@@ -29,7 +30,16 @@ def fetch_relevant_context(question):
     best_match, best_score = None, -1
     
     for chunk in chunks:
-        chunk_embedding = np.array(chunk["embedding"], dtype=np.float32)
+        chunk_embedding = chunk.get("embedding")  # Get embedding safely
+        if not chunk_embedding:
+            continue  # Skip if embedding is missing
+        
+        try:
+            # Convert JSON string to a list of floats
+            chunk_embedding = np.array(json.loads(chunk_embedding), dtype=np.float32)
+        except (ValueError, TypeError, json.JSONDecodeError):
+            continue  # Skip if conversion fails
+        
         if chunk_embedding.any():
             score = np.dot(embedding, chunk_embedding) / (np.linalg.norm(embedding) * np.linalg.norm(chunk_embedding))
             if score > best_score:
