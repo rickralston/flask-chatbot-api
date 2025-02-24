@@ -63,16 +63,29 @@ def ask_question():
     context = fetch_relevant_context(question)
     
     if not context:
-        return jsonify({"answer": "I couldn't find relevant information."})
+        return jsonify({"answer": "I couldn't find relevant information in my knowledge base."})
     
-    prompt = f"You are a helpful assistant. Answer the following question strictly based on the provided context.\n\nContext: {context}\n\nQuestion: {question}\n\nAnswer:"
+    system_prompt = """
+    You are an AI assistant that answers questions using ONLY the provided context.
+    Do not use outside knowledge, even if the answer seems obvious.
+    Your tone should match the style of the given content—clear, engaging, and approachable.
+    Keep answers conversational, direct, and to the point. Avoid sounding overly formal.
+    If the context includes a definition (e.g., 'X stands for Y'), prioritize extracting that.
+    If the answer is in the context, provide it naturally, like you’re chatting with a friend or colleague.
+    If the context does not fully answer the question, say so instead of guessing.
+    If a term is defined in the context, explain it simply and clearly.
+    Keep answers concise, aiming for **2-4 sentences max**. 
+    Avoid long-winded explanations or unnecessary details.
+    If the answer isn’t fully available, be honest about what’s missing instead of guessing.
+    """
+
     response = openai_client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": prompt}
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": f"Context: {context}\n\nQuestion: {question}\n\nAnswer:"}
         ],
-        temperature=0.7,
+        temperature=0.2,  # Lowered temperature for more controlled responses
     )
     
     answer = response.choices[0].message.content.strip() if response.choices else "I couldn't generate an answer based on the given context."
